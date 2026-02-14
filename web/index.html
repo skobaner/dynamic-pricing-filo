@@ -130,6 +130,41 @@
               <span>Resale Value (per vehicle, at end)</span>
               <input id="resalePerVehicle" type="number" step="100" value="27000" />
             </label>
+            <div class="inline-actions">
+              <button id="btnPredictResale" type="button" class="ghost">Predict Resale</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="group__title">Vehicle (for resale prediction)</div>
+            <label>
+              <span>Model</span>
+              <input id="vehModel" type="text" value="Transit" />
+            </label>
+            <label>
+              <span>Trim</span>
+              <input id="vehTrim" type="text" value="XL" />
+            </label>
+            <label>
+              <span>Region</span>
+              <input id="vehRegion" type="text" value="NE" />
+            </label>
+            <label>
+              <span>Age (months)</span>
+              <input id="vehAgeMonths" type="number" min="0" step="1" value="12" />
+            </label>
+            <label>
+              <span>Mileage</span>
+              <input id="vehMileage" type="number" min="0" step="100" value="18000" />
+            </label>
+            <label>
+              <span>Inflation CPI (annual)</span>
+              <input id="vehInflationCpi" type="number" step="0.001" value="0.03" />
+            </label>
+            <label>
+              <span>Consumer Confidence</span>
+              <input id="vehConsumerConfidence" type="number" step="1" value="95" />
+            </label>
           </div>
 
           <div class="group">

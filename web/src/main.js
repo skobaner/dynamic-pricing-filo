@@ -193,6 +193,37 @@ function readInputs() {
   return out;
 }
 
+function readVehicleInputs() {
+  const model = $("vehModel").value.trim();
+  const trim = $("vehTrim").value.trim();
+  const region = $("vehRegion").value.trim();
+  const age_months = readNumber("vehAgeMonths");
+  const mileage = readNumber("vehMileage");
+  const inflation_cpi = readNumber("vehInflationCpi");
+  const consumer_confidence = readNumber("vehConsumerConfidence");
+
+  if (!model) throw new Error("Vehicle model is required for prediction.");
+  if (!trim) throw new Error("Vehicle trim is required for prediction.");
+  if (!region) throw new Error("Vehicle region is required for prediction.");
+
+  return { model, trim, region, age_months, mileage, inflation_cpi, consumer_confidence };
+}
+
+async function predictResaleFromServer(vehicle) {
+  const resp = await fetch("/api/predict-resale", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ vehicle })
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    throw new Error(data && data.error ? data.error : `Predict failed (HTTP ${resp.status})`);
+  }
+  const v = data.predicted_resale_value_end_per_vehicle;
+  if (!Number.isFinite(v)) throw new Error("Predict returned invalid resale value.");
+  return v;
+}
+
 function validate(i) {
   if (i.termMonths <= 0) throw new Error("Term must be > 0 months.");
   if (i.numVehicles <= 0) throw new Error("# Vehicles must be > 0.");
@@ -334,6 +365,14 @@ function fillDemo() {
   $("resaleRiskFactor").value = "0.9";
   $("resalePerVehicle").value = "27270";
 
+  $("vehModel").value = "Transit";
+  $("vehTrim").value = "XL";
+  $("vehRegion").value = "NE";
+  $("vehAgeMonths").value = "12";
+  $("vehMileage").value = "18000";
+  $("vehInflationCpi").value = "0.03";
+  $("vehConsumerConfidence").value = "95";
+
   $("creditRiskPremiumPct").value = "0.06";
   $("volumeDiscountPct").value = "0.03";
   $("relationshipIncentive").value = "20";
@@ -355,6 +394,23 @@ function main() {
     clearError();
   });
 
+  $("btnPredictResale").addEventListener("click", async () => {
+    clearError();
+    const btn = $("btnPredictResale");
+    btn.disabled = true;
+    btn.textContent = "Predicting...";
+    try {
+      const vehicle = readVehicleInputs();
+      const pred = await predictResaleFromServer(vehicle);
+      $("resalePerVehicle").value = String(Math.round(pred));
+    } catch (err) {
+      showError(err instanceof Error ? err.message : String(err));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Predict Resale";
+    }
+  });
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     clearError();
@@ -370,4 +426,3 @@ function main() {
 }
 
 main();
-

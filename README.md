@@ -114,6 +114,21 @@ Then open `http://localhost:8000/`.
 
 The frontend computes pricing locally in the browser using the same math assumptions as the Python NPV engine.
 
+### Option C: Python App Server (Resale Prediction API + UI)
+
+If you want the frontend to **predict resale** (instead of typing it), run the included Python server which:
+
+- serves the UI from `web/`
+- exposes `POST /api/predict-resale` using `artifacts/resale_model.joblib`
+
+Start:
+
+```bash
+python3 server/app.py --port 8000 --model artifacts/resale_model.joblib
+```
+
+Open `http://127.0.0.1:8000/` and click **Predict Resale**.
+
 ## Loan Payments (What It Means Here)
 
 If a client leases 10 cars, you finance buying those 10 cars via a loan.
