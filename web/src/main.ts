@@ -214,14 +214,6 @@ function clearError(): void {
   box.classList.add("hidden");
 }
 
-function snapToInputStep(inputEl: HTMLInputElement, value: number): number {
-  const stepRaw = (inputEl.getAttribute("step") ?? "").trim().toLowerCase();
-  if (!stepRaw || stepRaw === "any") return value;
-  const step = Number(stepRaw);
-  if (!Number.isFinite(step) || step <= 0) return value;
-  return Math.round(value / step) * step;
-}
-
 function readVehicleInputs(): Record<string, unknown> {
   const model = ( $("vehModel") as HTMLInputElement).value.trim();
   const trim = ( $("vehTrim") as HTMLInputElement).value.trim();
@@ -493,8 +485,7 @@ function main(): void {
       const vehicle = readVehicleInputs();
       const pred = await predictResaleFromServer(vehicle);
       const resaleEl = $("resalePerVehicle") as HTMLInputElement;
-      const snapped = snapToInputStep(resaleEl, pred);
-      resaleEl.value = String(Math.round(snapped));
+      resaleEl.value = String(pred);
     } catch (err) {
       showError(err instanceof Error ? err.message : String(err));
     } finally {
