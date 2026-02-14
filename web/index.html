@@ -171,7 +171,7 @@
       </footer>
     </main>
 
-    <!-- Use JS so the page works even when opened directly (no Vite/TS transpile). -->
-    <script type="module" src="./src/main.js"></script>
+    <!-- Classic script (not module) to avoid file:// CORS restrictions. -->
+    <script defer src="./src/main.js"></script>
   </body>
 </html>
