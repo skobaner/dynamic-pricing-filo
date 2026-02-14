@@ -215,6 +215,11 @@ async function predictResaleFromServer(vehicle) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ vehicle })
   });
+  if (resp.status === 404) {
+    throw new Error(
+      "Predict endpoint not found. You are probably running a static server (python3 -m http.server) or opening index.html directly. Run: python3 server/app.py --port 8000 --model artifacts/resale_model.joblib"
+    );
+  }
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok) {
     throw new Error(data && data.error ? data.error : `Predict failed (HTTP ${resp.status})`);
