@@ -214,6 +214,55 @@ function clearError(): void {
   box.classList.add("hidden");
 }
 
+function snapToInputStep(inputEl: HTMLInputElement, value: number): number {
+  const stepRaw = (inputEl.getAttribute("step") ?? "").trim().toLowerCase();
+  if (!stepRaw || stepRaw === "any") return value;
+  const step = Number(stepRaw);
+  if (!Number.isFinite(step) || step <= 0) return value;
+  return Math.round(value / step) * step;
+}
+
+function readVehicleInputs(): Record<string, unknown> {
+  const model = ( $("vehModel") as HTMLInputElement).value.trim();
+  const trim = ( $("vehTrim") as HTMLInputElement).value.trim();
+  const region = ( $("vehRegion") as HTMLInputElement).value.trim();
+  const age_months = readNumber("vehAgeMonths");
+  const mileage = readNumber("vehMileage");
+  const inflation_cpi = readNumber("vehInflationCpi");
+  const consumer_confidence = readNumber("vehConsumerConfidence");
+
+  if (!model) throw new Error("Vehicle model is required for prediction.");
+  if (!trim) throw new Error("Vehicle trim is required for prediction.");
+  if (!region) throw new Error("Vehicle region is required for prediction.");
+
+  return { model, trim, region, age_months, mileage, inflation_cpi, consumer_confidence };
+}
+
+async function predictResaleFromServer(vehicle: Record<string, unknown>): Promise<number> {
+  const resp = await fetch("/api/predict-resale", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ vehicle })
+  });
+  if (resp.status === 404) {
+    throw new Error(
+      "Predict endpoint not found. Run: python3 server/app.py --port 8000 --model artifacts/resale_model.joblib"
+    );
+  }
+  if (resp.status === 501) {
+    throw new Error(
+      "Server does not support POST (HTTP 501). You are likely running `python3 -m http.server`. Run: python3 server/app.py --port 8000 --model artifacts/resale_model.joblib"
+    );
+  }
+  const data = (await resp.json().catch(() => ({}))) as any;
+  if (!resp.ok) {
+    throw new Error(data && data.error ? data.error : `Predict failed (HTTP ${resp.status})`);
+  }
+  const v = data.predicted_resale_value_end_per_vehicle;
+  if (!Number.isFinite(v)) throw new Error("Predict returned invalid resale value.");
+  return v;
+}
+
 function readInputs(): Inputs {
   const loanMode = (document.querySelector('input[name="loanMode"]:checked') as HTMLInputElement).value as LoanMode;
 
@@ -406,6 +455,14 @@ function fillDemo(): void {
   ( $("resaleRiskFactor") as HTMLInputElement).value = "0.9";
   ( $("resalePerVehicle") as HTMLInputElement).value = "27270";
 
+  ( $("vehModel") as HTMLInputElement).value = "Transit";
+  ( $("vehTrim") as HTMLInputElement).value = "XL";
+  ( $("vehRegion") as HTMLInputElement).value = "NE";
+  ( $("vehAgeMonths") as HTMLInputElement).value = "12";
+  ( $("vehMileage") as HTMLInputElement).value = "18000";
+  ( $("vehInflationCpi") as HTMLInputElement).value = "0.03";
+  ( $("vehConsumerConfidence") as HTMLInputElement).value = "95";
+
   ( $("creditRiskPremiumPct") as HTMLInputElement).value = "0.06";
   ( $("volumeDiscountPct") as HTMLInputElement).value = "0.03";
   ( $("relationshipIncentive") as HTMLInputElement).value = "20";
@@ -427,6 +484,25 @@ function main(): void {
     clearError();
   });
 
+  $("btnPredictResale").addEventListener("click", async () => {
+    clearError();
+    const btn = $("btnPredictResale") as HTMLButtonElement;
+    btn.disabled = true;
+    btn.textContent = "Predicting...";
+    try {
+      const vehicle = readVehicleInputs();
+      const pred = await predictResaleFromServer(vehicle);
+      const resaleEl = $("resalePerVehicle") as HTMLInputElement;
+      const snapped = snapToInputStep(resaleEl, pred);
+      resaleEl.value = String(Math.round(snapped));
+    } catch (err) {
+      showError(err instanceof Error ? err.message : String(err));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Predict Resale";
+    }
+  });
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     clearError();
@@ -442,4 +518,3 @@ function main(): void {
 }
 
 main();
-

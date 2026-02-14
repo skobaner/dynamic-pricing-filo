@@ -144,6 +144,14 @@ function clearError() {
   box.classList.add("hidden");
 }
 
+function snapToInputStep(inputEl, value) {
+  const stepRaw = (inputEl.getAttribute("step") || "").trim().toLowerCase();
+  if (!stepRaw || stepRaw === "any") return value;
+  const step = Number(stepRaw);
+  if (!Number.isFinite(step) || step <= 0) return value;
+  return Math.round(value / step) * step;
+}
+
 function readInputs() {
   const loanMode = document.querySelector('input[name="loanMode"]:checked').value;
 
@@ -412,7 +420,9 @@ function main() {
     try {
       const vehicle = readVehicleInputs();
       const pred = await predictResaleFromServer(vehicle);
-      $("resalePerVehicle").value = String(Math.round(pred));
+      const resaleEl = $("resalePerVehicle");
+      const snapped = snapToInputStep(resaleEl, pred);
+      resaleEl.value = String(Math.round(snapped));
     } catch (err) {
       showError(err instanceof Error ? err.message : String(err));
     } finally {
