@@ -16,6 +16,12 @@ source .venv/bin/activate
 pip install -e '.[dev]'
 ```
 
+If you don't want to install the package, you can run the CLI in-place via:
+
+```bash
+PYTHONPATH=src python3 -m fleet_pricing.cli --help
+```
+
 2) Generate a sample resale dataset:
 
 ```bash
@@ -24,6 +30,7 @@ python3 scripts/make_synthetic_resale_data.py --out data/resale_sample.csv --row
 
 3) Train the resale model:
 
+Installed CLI:
 ```bash
 fleet-pricing train-resale \
   --train-csv data/resale_sample.csv \
@@ -31,10 +38,36 @@ fleet-pricing train-resale \
   --model-out artifacts/resale_model.joblib
 ```
 
+In-place CLI:
+```bash
+PYTHONPATH=src python3 -m fleet_pricing.cli train-resale \
+  --train-csv data/resale_sample.csv \
+  --target-col resale_value_end \
+  --model-out artifacts/resale_model.joblib
+```
+
 4) Price a lease (predict resale from the same vehicle fields + compute fee):
 
+Installed CLI:
 ```bash
 fleet-pricing price-lease \
+  --term-months 36 \
+  --num-vehicles 10 \
+  --vehicle-purchase-price 42000 \
+  --loan-apr 0.08 \
+  --down-payment 0 \
+  --maintenance-monthly 65 \
+  --overhead-monthly 55 \
+  --inflation-annual 0.03 \
+  --discount-annual 0.10 \
+  --target-profit-pv 5000 \
+  --resale-model artifacts/resale_model.joblib \
+  --vehicle-json '{"model":"Transit","age_months":12,"mileage":18000,"trim":"XL","region":"NE","inflation_cpi":0.03,"consumer_confidence":95}'
+```
+
+In-place CLI:
+```bash
+PYTHONPATH=src python3 -m fleet_pricing.cli price-lease \
   --term-months 36 \
   --num-vehicles 10 \
   --vehicle-purchase-price 42000 \
@@ -53,15 +86,31 @@ The output is JSON including predicted resale, base fee, final fee, and an NPV b
 
 ## Frontend (TypeScript)
 
-Local TypeScript frontend lives in `web/`.
+Frontend lives in `web/`.
 
-Run:
+### Option A: TypeScript Dev Server (Recommended)
+
+This uses TypeScript (`web/src/main.ts`) and a dev server that transpiles it.
 
 ```bash
 cd web
 npm install
 npm run dev
 ```
+
+### Option B: No-Node Static Run (Python HTTP Server)
+
+Browsers can't run TypeScript directly, and `file://` module scripts can hit CORS restrictions.
+For a zero-build demo, the repo includes `web/src/main.js` and `web/index.html` loads it as a classic script.
+
+Run:
+
+```bash
+cd web
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000/`.
 
 The frontend computes pricing locally in the browser using the same math assumptions as the Python NPV engine.
 
