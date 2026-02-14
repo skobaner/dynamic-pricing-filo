@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fleet Pricing (NPV)</title>
+  </head>
+  <body>
+    <div class="bg"></div>
+
+    <main class="shell">
+      <header class="hero">
+        <div class="hero__left">
+          <div class="kicker">Dynamic Fleet Leasing</div>
+          <h1>NPV Pricing Console</h1>
+          <p class="sub">
+            Compute the minimum monthly fee that hits a target profit (PV), with inflation, discounting,
+            resale, and client adjustments.
+          </p>
+        </div>
+        <div class="hero__right">
+          <div class="stat">
+            <div class="stat__label">Assumption</div>
+            <div class="stat__value">Loan term = lease term</div>
+          </div>
+          <div class="stat">
+            <div class="stat__label">Mode</div>
+            <div class="stat__value">Local compute</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="grid">
+        <form id="pricingForm" class="panel">
+          <div class="panel__title">Inputs</div>
+
+          <div class="group">
+            <div class="group__title">Lease</div>
+            <label>
+              <span>Term (months)</span>
+              <input id="termMonths" type="number" min="1" step="1" value="36" />
+            </label>
+            <label>
+              <span># Vehicles</span>
+              <input id="numVehicles" type="number" min="1" step="1" value="10" />
+            </label>
+            <label>
+              <span>Target Profit (PV, total)</span>
+              <input id="targetProfit" type="number" step="100" value="5000" />
+            </label>
+          </div>
+
+          <div class="group">
+            <div class="group__title">Rates</div>
+            <label>
+              <span>Inflation (annual, effective)</span>
+              <input id="inflationAnnual" type="number" step="0.001" value="0.03" />
+            </label>
+            <label>
+              <span>Discount (annual, effective)</span>
+              <input id="discountAnnual" type="number" step="0.001" value="0.10" />
+            </label>
+          </div>
+
+          <div class="group">
+            <div class="group__title">Costs (per vehicle, per month)</div>
+            <label>
+              <span>Maintenance (month 1)</span>
+              <input id="maintenanceMonthly" type="number" step="1" value="65" />
+            </label>
+            <label>
+              <span>Overhead (month 1)</span>
+              <input id="overheadMonthly" type="number" step="1" value="55" />
+            </label>
+          </div>
+
+          <div class="group">
+            <div class="group__title">Financing (per vehicle)</div>
+            <div class="toggle">
+              <label class="toggle__item">
+                <input type="radio" name="loanMode" value="compute" checked />
+                <span>Compute Payment</span>
+              </label>
+              <label class="toggle__item">
+                <input type="radio" name="loanMode" value="manual" />
+                <span>Manual Payment</span>
+              </label>
+            </div>
+
+            <div id="loanCompute">
+              <label>
+                <span>Purchase Price</span>
+                <input id="purchasePrice" type="number" step="100" value="42000" />
+              </label>
+              <label>
+                <span>Down Payment</span>
+                <input id="downPayment" type="number" step="100" value="0" />
+              </label>
+              <label>
+                <span>Loan APR (nominal)</span>
+                <input id="loanApr" type="number" step="0.001" value="0.08" />
+              </label>
+              <label>
+                <span>Balloon Due at End</span>
+                <input id="loanBalloon" type="number" step="100" value="0" />
+              </label>
+            </div>
+
+            <div id="loanManual" class="hidden">
+              <label>
+                <span>Monthly Installment</span>
+                <input id="loanPaymentMonthly" type="number" step="1" value="1316" />
+              </label>
+              <label>
+                <span>Balloon Due at End</span>
+                <input id="loanBalloonManual" type="number" step="100" value="0" />
+              </label>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="group__title">Resale</div>
+            <label>
+              <span>Resale Risk Factor (0..1)</span>
+              <input id="resaleRiskFactor" type="number" min="0" max="1" step="0.01" value="0.9" />
+            </label>
+            <label>
+              <span>Resale Value (per vehicle, at end)</span>
+              <input id="resalePerVehicle" type="number" step="100" value="27000" />
+            </label>
+          </div>
+
+          <div class="group">
+            <div class="group__title">Client Adjustments (per vehicle, per month)</div>
+            <label>
+              <span>Credit Risk Premium (%)</span>
+              <input id="creditRiskPremiumPct" type="number" step="0.001" value="0" />
+            </label>
+            <label>
+              <span>Volume Discount (%)</span>
+              <input id="volumeDiscountPct" type="number" step="0.001" value="0" />
+            </label>
+            <label>
+              <span>Relationship Incentive ($)</span>
+              <input id="relationshipIncentive" type="number" step="1" value="0" />
+            </label>
+          </div>
+
+          <div class="actions">
+            <button id="btnCalc" type="submit">Calculate Fee</button>
+            <button id="btnFillDemo" type="button" class="ghost">Fill Demo</button>
+          </div>
+
+          <div id="errorBox" class="error hidden"></div>
+        </form>
+
+        <section class="panel panel--results">
+          <div class="panel__title">Output</div>
+          <div id="results" class="results empty">
+            <div class="empty__title">No calculation yet</div>
+            <div class="empty__sub">Enter inputs and hit Calculate.</div>
+          </div>
+        </section>
+      </section>
+
+      <footer class="foot">
+        <div>Frontend: TypeScript (Vite). Pricing math mirrors the Python engine.</div>
+        <div class="mono">/Users/serankobaner/dynamic-pricing-filo/web</div>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+
