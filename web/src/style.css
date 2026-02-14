@@ -8,11 +8,13 @@
   --accent: #ffb000;
   --accent2: #63d7ff;
   --danger: #ff4d4d;
+  --ok: #53ffb4;
 
   --card: rgba(20, 26, 34, 0.72);
   --card2: rgba(15, 17, 21, 0.72);
   --stroke: rgba(255, 255, 255, 0.14);
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  --shadow2: 0 18px 60px rgba(0, 0, 0, 0.28);
 
   --radius: 16px;
 }
@@ -23,7 +25,9 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--bg0);
-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", serif;
+  font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 .bg {
@@ -36,6 +40,16 @@ body {
     linear-gradient(180deg, var(--bg0), var(--bg1));
   filter: saturate(1.1);
   pointer-events: none;
+}
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0);
+  background-size: 18px 18px;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
 }
 
 .shell {
@@ -57,6 +71,18 @@ body {
   border-radius: var(--radius);
   background: linear-gradient(180deg, rgba(20, 26, 34, 0.82), rgba(15, 17, 21, 0.70));
   box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  right: -240px;
+  top: -280px;
+  background: radial-gradient(circle, rgba(255,176,0,0.22), transparent 62%);
+  filter: blur(1px);
+  pointer-events: none;
 }
 
 .kicker {
@@ -81,6 +107,7 @@ h1 {
   margin: 0;
   color: var(--muted);
   line-height: 1.35;
+  max-width: 62ch;
 }
 
 .hero__right {
@@ -95,6 +122,7 @@ h1 {
   border: 1px solid var(--stroke);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.20);
 }
 .stat__label { color: var(--muted); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 .stat__value { margin-top: 4px; font-size: 16px; }
@@ -110,8 +138,21 @@ h1 {
   border: 1px solid var(--stroke);
   border-radius: var(--radius);
   background: linear-gradient(180deg, var(--card), var(--card2));
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow2);
   padding: 14px;
+  position: relative;
+}
+.panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,176,0,0.90), rgba(99,215,255,0.75));
+  opacity: 0.55;
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
 }
 .panel__title {
   font-size: 14px;
@@ -127,6 +168,11 @@ h1 {
   padding: 12px;
   margin-bottom: 12px;
   background: rgba(0, 0, 0, 0.12);
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.group:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.16);
 }
 .group__title {
   font-size: 13px;
@@ -153,10 +199,14 @@ input {
   padding: 10px 10px;
   font-size: 14px;
   outline: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 input:focus {
   border-color: rgba(255, 176, 0, 0.55);
   box-shadow: 0 0 0 4px rgba(255, 176, 0, 0.10);
+}
+input:hover {
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .toggle {
@@ -171,9 +221,14 @@ input:focus {
   border-radius: 12px;
   padding: 10px;
   background: rgba(255, 255, 255, 0.03);
+  transition: border-color 140ms ease, background 140ms ease;
 }
 .toggle__item input { width: 18px; height: 18px; }
 .toggle__item span { color: rgba(255, 255, 255, 0.82); }
+.toggle__item:hover {
+  border-color: rgba(255, 255, 255, 0.20);
+  background: rgba(255, 255, 255, 0.05);
+}
 
 .actions {
   display: flex;
@@ -186,18 +241,24 @@ button {
   padding: 12px 14px;
   font-size: 14px;
   cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease, background 120ms ease, box-shadow 120ms ease;
 }
 #btnCalc {
   flex: 1;
   background: linear-gradient(135deg, rgba(255, 176, 0, 1), rgba(255, 110, 0, 1));
   color: #111;
   font-weight: 700;
+  box-shadow: 0 14px 40px rgba(255, 145, 0, 0.16);
 }
 .ghost {
   background: rgba(255, 255, 255, 0.06);
   color: var(--ink);
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
+button:hover { transform: translateY(-1px); }
+button:active { transform: translateY(0px); filter: saturate(0.95); }
+#btnCalc:hover { filter: brightness(1.03) saturate(1.08); }
+.ghost:hover { background: rgba(255, 255, 255, 0.09); }
 
 .error {
   margin-top: 10px;
@@ -207,6 +268,10 @@ button {
   border-radius: 12px;
   padding: 10px 12px;
   font-size: 14px;
+}
+
+.panel--results {
+  min-height: 520px;
 }
 
 .results.empty {
@@ -231,6 +296,7 @@ button {
   padding: 12px;
   background: rgba(255, 255, 255, 0.03);
   animation: rise 240ms ease-out both;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
 }
 .card__label {
   color: var(--muted);
@@ -251,6 +317,7 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
   overflow: hidden;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.18);
 }
 .row {
   display: grid;
@@ -287,3 +354,14 @@ button {
   h1 { font-size: 38px; }
 }
 
+@media (min-width: 981px) {
+  .panel--results {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
